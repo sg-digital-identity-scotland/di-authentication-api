@@ -7,19 +7,28 @@ terraform {
       version = "3.37.0"
     }
   }
-
-  backend "s3" {
-    bucket  = "digital-identity-dev-tfstate"
-    key     = "spike-terraform.tfstate"
-    encrypt = true
-    region  = "eu-west-2"
-  }
+//
+//  backend "s3" {
+//    bucket  = "digital-identity-dev-tfstate"
+//    key     = "spike-terraform.tfstate"
+//    encrypt = true
+//    region  = "eu-west-2"
+//  }
 }
 
 provider "aws" {
-  region  = "eu-west-2"
+  access_key                  = "mock_access_key"
+  region                      = "us-east-1"
+  s3_force_path_style         = true
+  secret_key                  = "mock_secret_key"
+  skip_credentials_validation = true
+  skip_metadata_api_check     = true
+  skip_requesting_account_id  = true
 
-  assume_role {
-    role_arn = var.deployer-role-arn
+  endpoints {
+    apigateway     = "http://localhost:45678"
+    ecr            = "http://localhost:45678"
+    iam            = "http://localhost:45678"
+    lambda         = "http://localhost:45678"
   }
 }
