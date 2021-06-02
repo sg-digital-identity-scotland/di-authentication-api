@@ -28,3 +28,7 @@ resource "aws_lambda_function" "userinfo_lambda" {
 
   runtime = "java11"
 }
+
+output "userinfo_lambda" {
+  value = aws_lambda_function.userinfo_lambda
+}
