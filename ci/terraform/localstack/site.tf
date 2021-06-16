@@ -10,7 +10,6 @@ terraform {
 }
 
 provider "aws" {
-  alias                       = "localstack"
   access_key                  = "mock_access_key"
   region                      = "eu-west-2"
   s3_force_path_style         = false

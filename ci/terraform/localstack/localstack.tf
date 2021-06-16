@@ -1,16 +1,10 @@
 module "api_gateway_root" {
   source = "../modules/api-gateway-root"
-  providers = {
-    aws = aws.localstack
-  }
   environment = var.environment
 }
 
 module "authorize" {
   source = "../modules/endpoint-module"
-  providers = {
-    aws = aws.localstack
-  }
 
   endpoint_name   = "authorize"
   endpoint_method = "GET"
@@ -30,9 +24,6 @@ module "authorize" {
 
 module "openid_configuration_discovery" {
   source = "../modules/endpoint-module"
-  providers = {
-    aws = aws.localstack
-  }
 
   endpoint_name   = "openid-configuration"
   endpoint_method = "GET"
@@ -52,9 +43,6 @@ module "openid_configuration_discovery" {
 
 module "jwks" {
   source = "../modules/endpoint-module"
-  providers = {
-    aws = aws.localstack
-  }
 
   endpoint_name   = "jwk.json"
   endpoint_method = "GET"
@@ -74,9 +62,6 @@ module "jwks" {
 
 module "token" {
   source = "../modules/endpoint-module"
-  providers = {
-    aws = aws.localstack
-  }
 
   endpoint_name   = "token"
   endpoint_method = "POST"
@@ -96,9 +81,6 @@ module "token" {
 
 module "register" {
   source = "../modules/endpoint-module"
-  providers = {
-    aws = aws.localstack
-  }
 
   endpoint_name   = "register"
   endpoint_method = "POST"
@@ -118,9 +100,6 @@ module "register" {
 
 module "signup" {
   source = "../modules/endpoint-module"
-  providers = {
-    aws = aws.localstack
-  }
 
   endpoint_name   = "signup"
   endpoint_method = "POST"
@@ -140,9 +119,6 @@ module "signup" {
 
 module "userinfo" {
   source = "../modules/endpoint-module"
-  providers = {
-    aws = aws.localstack
-  }
 
   endpoint_name   = "userinfo"
   endpoint_method = "GET"
@@ -162,9 +138,6 @@ module "userinfo" {
 
 module "userexists" {
   source = "../modules/endpoint-module"
-  providers = {
-    aws = aws.localstack
-  }
 
   endpoint_name   = "userexists"
   endpoint_method = "POST"
@@ -184,9 +157,6 @@ module "userexists" {
 
 module "send_notification" {
   source = "../modules/endpoint-module"
-  providers = {
-    aws = aws.localstack
-  }
 
   endpoint_name   = "send-notification"
   endpoint_method = "POST"
