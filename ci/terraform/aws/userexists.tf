@@ -3,6 +3,8 @@ module "userexists" {
 
   endpoint_name   = "userexists"
   endpoint_method = "POST"
+  environment     = var.environment
+
   handler_environment_variables = {
     BASE_URL = var.api_base_url
     REDIS_HOST     = aws_elasticache_replication_group.sessions_store.primary_endpoint_address
@@ -19,4 +21,11 @@ module "userexists" {
   lambda_zip_file           = var.lambda_zip_file
   security_group_id         = aws_vpc.authentication.default_security_group_id
   subnet_id                 = aws_subnet.authentication.*.id
+
+  depends_on = [
+    aws_vpc.authentication,
+    aws_subnet.authentication,
+    module.api_gateway_root,
+    aws_elasticache_replication_group.sessions_store,
+  ]
 }

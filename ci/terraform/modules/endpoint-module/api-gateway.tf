@@ -9,6 +9,10 @@ resource "aws_api_gateway_method" "endpoint_method" {
   resource_id   = aws_api_gateway_resource.endpoint_resource.id
   http_method   = var.endpoint_method
   authorization = "NONE"
+
+  depends_on = [
+    aws_api_gateway_resource.endpoint_resource
+  ]
 }
 
 resource "aws_api_gateway_integration" "endpoint_integration" {
@@ -19,6 +23,11 @@ resource "aws_api_gateway_integration" "endpoint_integration" {
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
   uri                     = aws_lambda_function.endpoint_lambda.invoke_arn
+
+  depends_on = [
+    aws_api_gateway_method.endpoint_method,
+    aws_lambda_function.endpoint_lambda,
+  ]
 }
 
 resource "aws_api_gateway_deployment" "endpoint_deployment" {
@@ -27,6 +36,7 @@ resource "aws_api_gateway_deployment" "endpoint_deployment" {
 
   depends_on = [
     aws_api_gateway_integration.endpoint_integration,
+    aws_api_gateway_method.endpoint_method,
   ]
 }
 
@@ -40,4 +50,3 @@ resource "aws_lambda_permission" "endpoint_execution_permission" {
   # within the API Gateway REST API.
   source_arn = "${var.execution_arn}/*/*"
 }
-

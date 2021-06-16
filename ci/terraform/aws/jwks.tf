@@ -3,6 +3,8 @@ module "jwks" {
 
   endpoint_name   = "jwks.json"
   endpoint_method = "GET"
+  environment     = var.environment
+
   handler_environment_variables = {
     BASE_URL = var.api_base_url
   }
@@ -15,4 +17,11 @@ module "jwks" {
   lambda_zip_file           = var.lambda_zip_file
   security_group_id         = aws_vpc.authentication.default_security_group_id
   subnet_id                 = aws_subnet.authentication.*.id
+
+  depends_on = [
+    aws_vpc.authentication,
+    aws_subnet.authentication,
+    module.api_gateway_root,
+    aws_elasticache_replication_group.sessions_store,
+  ]
 }

@@ -37,7 +37,6 @@ variable "execution_arn" {
 
 variable "environment" {
   type    = string
-  default = "test"
 }
 
 variable "api_deployment_stage_name" {

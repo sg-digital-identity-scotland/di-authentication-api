@@ -3,6 +3,8 @@ module "send_notification" {
 
   endpoint_name   = "send-notification"
   endpoint_method = "POST"
+  environment     = var.environment
+
   handler_environment_variables = {
     EMAIL_QUEUE_URL = module.email_notification_sqs_queue.queue_url
     REDIS_HOST     = aws_elasticache_replication_group.sessions_store.primary_endpoint_address
@@ -19,4 +21,12 @@ module "send_notification" {
   lambda_zip_file           = var.lambda_zip_file
   security_group_id         = aws_vpc.authentication.default_security_group_id
   subnet_id                 = aws_subnet.authentication.*.id
+
+  depends_on = [
+    aws_vpc.authentication,
+    aws_subnet.authentication,
+    module.api_gateway_root,
+    module.email_notification_sqs_queue,
+    aws_elasticache_replication_group.sessions_store,
+  ]
 }
