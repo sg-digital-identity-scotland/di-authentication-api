@@ -30,6 +30,10 @@ resource "aws_lambda_function" "sqs_lambda" {
   tags = {
     environment = var.environment
   }
+
+  depends_on = [
+    aws_iam_role.lambda_iam_role,
+  ]
 }
 
 resource "aws_iam_policy" "lambda_logging_policy" {
@@ -59,6 +63,11 @@ EOF
 resource "aws_iam_role_policy_attachment" "lambda_logs" {
   role       = aws_iam_role.lambda_iam_role.name
   policy_arn = aws_iam_policy.lambda_logging_policy.arn
+
+  depends_on = [
+    aws_iam_role.lambda_iam_role,
+    aws_iam_policy.lambda_logging_policy,
+  ]
 }
 
 resource "aws_iam_policy" "lambda_networking_policy" {
@@ -89,4 +98,9 @@ EOF
 resource "aws_iam_role_policy_attachment" "lambda_networking" {
   role       = aws_iam_role.lambda_iam_role.name
   policy_arn = aws_iam_policy.lambda_networking_policy.arn
+
+  depends_on = [
+    aws_iam_role.lambda_iam_role,
+    aws_iam_policy.lambda_networking_policy,
+  ]
 }

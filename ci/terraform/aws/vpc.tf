@@ -2,6 +2,10 @@ resource "aws_vpc" "authentication" {
   cidr_block           = "10.0.0.0/16"
   enable_dns_hostnames = true
   enable_dns_support   = true
+
+  tags = {
+    environment = var.environment
+  }
 }
 
 data "aws_availability_zones" "available" {}
@@ -12,25 +16,14 @@ resource "aws_subnet" "authentication" {
   cidr_block        = "10.0.${count.index}.0/24"
   availability_zone = data.aws_availability_zones.available.names[count.index]
 
+  depends_on = [
+    aws_vpc.authentication,
+  ]
+
   tags = {
     environment = var.environment
     Name        = "${var.environment}-private-subnet-for-${data.aws_availability_zones.available.names[count.index]}"
   }
-
-  depends_on = [
-    aws_vpc.authentication,
-  ]
-}
-
-resource "aws_route_table_association" "private" {
-  count          = length(data.aws_availability_zones.available.names)
-  subnet_id      = element(aws_subnet.authentication.*.id,count.index)
-  route_table_id = aws_vpc.authentication.default_route_table_id
-
-  depends_on = [
-    aws_vpc.authentication,
-    aws_subnet.authentication,
-  ]
 }
 
 data "aws_vpc_endpoint_service" "sqs" {
@@ -54,6 +47,10 @@ resource "aws_vpc_endpoint" "sqs" {
     aws_vpc.authentication,
     aws_subnet.authentication,
   ]
+
+  tags = {
+    environment = var.environment
+  }
 }
 
 resource "aws_subnet" "authentication_public" {

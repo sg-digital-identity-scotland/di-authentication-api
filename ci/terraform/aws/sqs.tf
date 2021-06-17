@@ -3,7 +3,7 @@ module "email_notification_sqs_queue" {
 
   environment = var.environment
   name = "email-notification"
-  sender_principal_arns = [module.send_notification.lambda_iam_role_arn]
+  sender_principal_arns = [module.sqs_lambda_role.role_arn]
 
   handler_environment_variables = {
     VERIFY_EMAIL_TEMPLATE_ID = "b7dbb02f-941b-4d72-ad64-84cbe5d77c2e"
@@ -19,5 +19,6 @@ module "email_notification_sqs_queue" {
     aws_vpc.authentication,
     aws_subnet.authentication,
     aws_elasticache_replication_group.sessions_store,
+    module.sqs_lambda_role,
   ]
 }

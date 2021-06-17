@@ -50,6 +50,11 @@ data "aws_iam_policy_document" "queue_policy_document" {
       aws_sqs_queue.queue.arn
     ]
   }
+
+  depends_on = [
+    aws_iam_role.lambda_iam_role,
+    aws_sqs_queue.queue
+  ]
 }
 
 resource "aws_sqs_queue_policy" "queue_policy" {

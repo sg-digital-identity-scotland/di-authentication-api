@@ -22,11 +22,13 @@ module "authorize" {
   lambda_zip_file           = var.lambda_zip_file
   security_group_id         = aws_vpc.authentication.default_security_group_id
   subnet_id                 = aws_subnet.authentication.*.id
+  lambda_role_arn           = module.standard_lambda_role.role_arn
 
   depends_on = [
     aws_vpc.authentication,
     aws_subnet.authentication,
     module.api_gateway_root,
+    module.standard_lambda_role,
     aws_elasticache_replication_group.sessions_store,
   ]
 }

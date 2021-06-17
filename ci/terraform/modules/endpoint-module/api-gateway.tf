@@ -17,14 +17,15 @@ resource "aws_api_gateway_method" "endpoint_method" {
 
 resource "aws_api_gateway_integration" "endpoint_integration" {
   rest_api_id = var.rest_api_id
-  resource_id = aws_api_gateway_method.endpoint_method.resource_id
-  http_method = aws_api_gateway_method.endpoint_method.http_method
+  resource_id = aws_api_gateway_resource.endpoint_resource.id
+  http_method = var.endpoint_method
 
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
   uri                     = aws_lambda_function.endpoint_lambda.invoke_arn
 
   depends_on = [
+    aws_api_gateway_resource.endpoint_resource,
     aws_api_gateway_method.endpoint_method,
     aws_lambda_function.endpoint_lambda,
   ]
