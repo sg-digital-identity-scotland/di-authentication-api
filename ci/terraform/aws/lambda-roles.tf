@@ -1,5 +1,5 @@
 resource "aws_iam_role" "lambda_iam_role" {
-  name = "${var.environment}-${var.role_name}-lambda-role"
+  name = "${var.environment}-standard-lambda-role"
 
   assume_role_policy = var.lambda_iam_policy
   tags = {
@@ -8,7 +8,7 @@ resource "aws_iam_role" "lambda_iam_role" {
 }
 
 resource "aws_iam_policy" "endpoint_logging_policy" {
-  name        = "${var.environment}-${var.role_name}-lambda-logging"
+  name        = "${var.environment}-standard-lambda-logging"
   path        = "/"
   description = "IAM policy for logging from a lambda"
 
@@ -37,7 +37,7 @@ resource "aws_iam_role_policy_attachment" "lambda_logs" {
 }
 
 resource "aws_iam_policy" "endpoint_networking_policy" {
-  name        = "${var.environment}-${var.role_name}-lambda-networking"
+  name        = "${var.environment}-standard-lambda-networking"
   path        = "/"
   description = "IAM policy for managing VPC connection for a lambda"
 
@@ -63,5 +63,24 @@ EOF
 
 resource "aws_iam_role_policy_attachment" "lambda_networking" {
   role       = aws_iam_role.lambda_iam_role.name
+  policy_arn = aws_iam_policy.endpoint_networking_policy.arn
+}
+
+resource "aws_iam_role" "sqs_lambda_iam_role" {
+  name = "${var.environment}-sqs-lambda-role"
+
+  assume_role_policy = var.lambda_iam_policy
+  tags = {
+    environment = var.environment
+  }
+}
+
+resource "aws_iam_role_policy_attachment" "sqs_lambda_logs" {
+  role       = aws_iam_role.sqs_lambda_iam_role.name
+  policy_arn = aws_iam_policy.endpoint_logging_policy.arn
+}
+
+resource "aws_iam_role_policy_attachment" "sqs_lambda_networking" {
+  role       = aws_iam_role.sqs_lambda_iam_role.name
   policy_arn = aws_iam_policy.endpoint_networking_policy.arn
 }

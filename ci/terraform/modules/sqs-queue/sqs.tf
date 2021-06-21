@@ -25,10 +25,6 @@ data "aws_iam_policy_document" "queue_policy_document" {
       "sqs:ChangeMessageVisibility",
       "sqs:GetQueueAttributes",
     ]
-
-    resources = [
-      aws_sqs_queue.queue.arn
-    ]
   }
 
   statement {
@@ -44,10 +40,6 @@ data "aws_iam_policy_document" "queue_policy_document" {
       "sqs:ReceiveMessage",
       "sqs:DeleteMessage",
       "sqs:GetQueueAttributes",
-    ]
-
-    resources = [
-      aws_sqs_queue.queue.arn
     ]
   }
 
