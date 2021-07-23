@@ -17,6 +17,14 @@ resources:
         - ci/pipeline.yaml
       branch: main
 
+  - name: di-authentication-api-release
+    icon: git
+    type: github-release
+    source:
+      access_token: ((github-api-token))
+      owner: alphagov
+      repository: di-authentication-api
+
 jobs:
   - name: update-pipeline
     plan:
@@ -116,3 +124,41 @@ jobs:
                   -backend-config "region=eu-west-2"
 
                 terraform apply -auto-approve ../../../../terraform-plan/terraform.plan
+
+
+  - name: create-release
+    plan:
+      - get: di-authentication-api
+        trigger: true
+        passed:
+          - deploy-environment
+      - get: di-authentication-api-release
+        trigger: false
+      - task: bump-release-version
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: ghcr.io/alphagov/automate/task-toolbox
+              tag: latest
+          inputs:
+            - name: di-authentication-api-release
+          outputs:
+            - name: release-version
+          run:
+            path: /bin/bash
+            args:
+              - -eu
+              - -c
+              - |
+                echo "bumping release number..."
+                CURRENT_TAG=$(cat release/tag)
+                awk -F. '/[0-9]+\./{$NF++;print}' OFS=. <<< "${CURRENT_TAG}" > release-version/tag
+                NEW_TAG=$(cat release-version/tag)
+                echo "${NEW_TAG}" > release-version/name
+                cat release-version/name
+      - put: di-authentication-api-release
+        params:
+          name: release-version/name
+          tag: release-version/tag
