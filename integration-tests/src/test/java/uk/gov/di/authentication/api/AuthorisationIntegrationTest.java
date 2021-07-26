@@ -192,11 +192,11 @@ public class AuthorisationIntegrationTest extends IntegrationTestEndpoints {
                         .queryParam("redirect_uri", "localhost")
                         .queryParam("state", "8VAVNSxHO1HwiNDhwchQKdd7eOUK3ltKfQzwPDxu9LU")
                         .queryParam("client_id", clientId.orElse("test-client"))
-                        .queryParam("scope", "openid");
+                        .queryParam("scope", "openid")
+                        .property(ClientProperties.FOLLOW_REDIRECTS, Boolean.FALSE);
         if (prompt.isPresent()) {
-            webTarget.queryParam("prompt", prompt);
+            webTarget = webTarget.queryParam("prompt", prompt.get());
         }
-        webTarget.property(ClientProperties.FOLLOW_REDIRECTS, Boolean.FALSE);
 
         Invocation.Builder builder = webTarget.request();
         cookie.ifPresent(builder::cookie);

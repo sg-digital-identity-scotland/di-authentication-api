@@ -8,6 +8,7 @@ import com.nimbusds.oauth2.sdk.OAuth2Error;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.gov.di.entity.Session;
+import uk.gov.di.entity.SessionState;
 import uk.gov.di.helpers.RequestBodyHelper;
 import uk.gov.di.services.ClientService;
 import uk.gov.di.services.ConfigurationService;
@@ -20,6 +21,7 @@ import java.util.Optional;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -114,5 +116,44 @@ class AuthorisationHandlerTest {
         assertEquals(
                 "http://localhost:8080?error=invalid_scope&error_description=Invalid%2C+unknown+or+malformed+scope",
                 response.getHeaders().get("Location"));
+    }
+
+    @Test
+    void shouldNotPromptForLoginWhenPromptNoneAndUserAuthenticated() {
+        final URI loginUrl = URI.create("http://example.com");
+        final Session session = new Session("a-session-id");
+        session.setState(SessionState.AUTHENTICATED);
+
+        when(clientService.getErrorForAuthorizationRequest(any(AuthorizationRequest.class)))
+                .thenReturn(Optional.empty());
+        when(configService.getLoginURI()).thenReturn(loginUrl);
+        when(sessionService.createSession()).thenReturn(session);
+        when(configService.getSessionCookieAttributes()).thenReturn("Secure; HttpOnly;");
+        when(configService.getSessionCookieMaxAge()).thenReturn(1800);
+        when(sessionService.generateClientSessionID()).thenReturn("client-session-id");
+        when(sessionService.getSessionFromSessionCookie(any())).thenReturn(Optional.of(session));
+
+        APIGatewayProxyRequestEvent event = new APIGatewayProxyRequestEvent();
+        event.setQueryStringParameters(
+                Map.of(
+                        "client_id", "test-id",
+                        "redirect_uri", "http://localhost:8080",
+                        "scope", "email,openid,profile",
+                        "response_type", "code",
+                        "state", "some-state",
+                        "prompt", "none"));
+        APIGatewayProxyResponseEvent response = handler.handleRequest(event, context);
+        URI uri = URI.create(response.getHeaders().get("Location"));
+        Map<String, String> requestParams = RequestBodyHelper.parseRequestBody(uri.getQuery());
+        final String expectedCookieString =
+                "gs=a-session-id.client-session-id; Max-Age=1800; Secure; HttpOnly;";
+
+        assertThat(response, hasStatus(302));
+        assertNotEquals(loginUrl.getAuthority(), uri.getAuthority());
+
+        assertThat(requestParams, hasEntry("id", session.getSessionId()));
+        assertEquals(expectedCookieString, response.getHeaders().get("Set-Cookie"));
+
+        verify(sessionService).save(eq(session));
     }
 }
