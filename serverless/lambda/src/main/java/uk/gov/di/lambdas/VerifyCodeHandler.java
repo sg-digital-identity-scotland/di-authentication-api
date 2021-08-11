@@ -6,6 +6,8 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import uk.gov.di.actions.UserAction;
+import uk.gov.di.actions.UserEnteredCodeFromPhone;
 import uk.gov.di.entity.BaseAPIResponse;
 import uk.gov.di.entity.ErrorResponse;
 import uk.gov.di.entity.NotificationType;
@@ -29,6 +31,7 @@ import static uk.gov.di.entity.SessionState.PHONE_NUMBER_CODE_MAX_RETRIES_REACHE
 import static uk.gov.di.entity.SessionState.PHONE_NUMBER_CODE_VERIFIED;
 import static uk.gov.di.helpers.ApiGatewayResponseHelper.generateApiGatewayProxyErrorResponse;
 import static uk.gov.di.helpers.ApiGatewayResponseHelper.generateApiGatewayProxyResponse;
+import static uk.gov.di.helpers.StateMachine.userPerformedAction;
 import static uk.gov.di.helpers.StateMachine.validateStateTransition;
 
 public class VerifyCodeHandler
@@ -106,51 +109,39 @@ public class VerifyCodeHandler
                     return generateApiGatewayProxyResponse(
                             200, new BaseAPIResponse(session.get().getState()));
                 case VERIFY_PHONE_NUMBER:
-                    if (codeStorageService.isCodeBlockedForSession(
-                            session.get().getEmailAddress(), session.get().getSessionId())) {
-                        validateStateTransition(
-                                session.get(), PHONE_NUMBER_CODE_MAX_RETRIES_REACHED);
-                        sessionService.save(
-                                session.get().setState(PHONE_NUMBER_CODE_MAX_RETRIES_REACHED));
-                    } else {
-                        Optional<String> phoneNumberCode =
-                                codeStorageService.getOtpCode(
-                                        session.get().getEmailAddress(),
-                                        codeRequest.getNotificationType());
-                        var newState =
-                                validationService.validatePhoneVerificationCode(
-                                        phoneNumberCode,
-                                        codeRequest.getCode(),
-                                        session.get(),
-                                        configurationService.getCodeMaxRetries());
+                    UserAction verifyAction =
+                            new UserEnteredCodeFromPhone(
+                                    PHONE_NUMBER_CODE_MAX_RETRIES_REACHED,
+                                    validationService,
+                                    codeRequest.getCode(),
+                                    codeStorageService.getOtpCode(
+                                            session.get().getEmailAddress(),
+                                            codeRequest.getNotificationType()),
+                                    configurationService.getCodeMaxRetries(),
+                                    codeStorageService.isCodeBlockedForSession(
+                                            session.get().getEmailAddress(),
+                                            session.get().getSessionId()));
+                    sessionService.save(userPerformedAction(verifyAction, session.get()));
 
-                        validateStateTransition(session.get(), newState);
-                        sessionService.save(session.get().setState(newState));
-                        processCodeSessionState(session.get(), codeRequest.getNotificationType());
-                    }
+                    processCodeSessionState(session.get(), codeRequest.getNotificationType());
                     return generateApiGatewayProxyResponse(
                             200, new BaseAPIResponse(session.get().getState()));
                 case MFA_SMS:
-                    if (codeStorageService.isCodeBlockedForSession(
-                            session.get().getEmailAddress(), session.get().getSessionId())) {
-                        validateStateTransition(session.get(), MFA_CODE_MAX_RETRIES_REACHED);
-                        sessionService.save(session.get().setState(MFA_CODE_MAX_RETRIES_REACHED));
-                    } else {
-                        Optional<String> mfaCode =
-                                codeStorageService.getOtpCode(
-                                        session.get().getEmailAddress(),
-                                        codeRequest.getNotificationType());
-                        var newState =
-                                validationService.validateMfaVerificationCode(
-                                        mfaCode,
-                                        codeRequest.getCode(),
-                                        session.get(),
-                                        configurationService.getCodeMaxRetries());
+                    UserAction mfaAction =
+                            new UserEnteredCodeFromPhone(
+                                    MFA_CODE_MAX_RETRIES_REACHED,
+                                    validationService,
+                                    codeRequest.getCode(),
+                                    codeStorageService.getOtpCode(
+                                            session.get().getEmailAddress(),
+                                            codeRequest.getNotificationType()),
+                                    configurationService.getCodeMaxRetries(),
+                                    codeStorageService.isCodeBlockedForSession(
+                                            session.get().getEmailAddress(),
+                                            session.get().getSessionId()));
+                    sessionService.save(userPerformedAction(mfaAction, session.get()));
 
-                        validateStateTransition(session.get(), newState);
-                        sessionService.save(session.get().setState(newState));
-                        processCodeSessionState(session.get(), codeRequest.getNotificationType());
-                    }
+                    processCodeSessionState(session.get(), codeRequest.getNotificationType());
                     return generateApiGatewayProxyResponse(
                             200, new BaseAPIResponse(session.get().getState()));
             }
