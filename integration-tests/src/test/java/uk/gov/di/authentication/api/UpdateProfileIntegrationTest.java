@@ -49,7 +49,9 @@ public class UpdateProfileIntegrationTest extends IntegrationTestEndpoints {
         UpdateProfileRequest request =
                 new UpdateProfileRequest(EMAIL_ADDRESS, ADD_PHONE_NUMBER, "0123456789");
 
-        Response response = RequestHelper.request(UPDATE_PROFILE_ENDPOINT, request, headers);
+        Response response =
+                RequestHelper.request(
+                        FRONTEND_ROOT_RESOURCE_URL, UPDATE_PROFILE_ENDPOINT, request, headers);
 
         assertEquals(200, response.getStatus());
     }
@@ -72,7 +74,7 @@ public class UpdateProfileIntegrationTest extends IntegrationTestEndpoints {
 
         Response response =
                 ClientBuilder.newClient()
-                        .target(ROOT_RESOURCE_URL + UPDATE_PROFILE_ENDPOINT)
+                        .target(FRONTEND_ROOT_RESOURCE_URL + UPDATE_PROFILE_ENDPOINT)
                         .request(MediaType.APPLICATION_JSON)
                         .headers(headers)
                         .post(Entity.entity(request, MediaType.APPLICATION_JSON));

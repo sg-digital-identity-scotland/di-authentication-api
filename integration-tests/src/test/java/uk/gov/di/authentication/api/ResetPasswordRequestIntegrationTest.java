@@ -57,7 +57,10 @@ public class ResetPasswordRequestIntegrationTest extends IntegrationTestEndpoint
         headers.add("X-API-Key", API_KEY);
         Response response =
                 RequestHelper.request(
-                        RESET_PASSWORD_ENDPOINT, new ResetPasswordRequest(email), headers);
+                        FRONTEND_ROOT_RESOURCE_URL,
+                        RESET_PASSWORD_ENDPOINT,
+                        new ResetPasswordRequest(email),
+                        headers);
 
         notifyStub.waitForRequest(60);
 
@@ -85,7 +88,10 @@ public class ResetPasswordRequestIntegrationTest extends IntegrationTestEndpoint
 
         Response response =
                 RequestHelper.request(
-                        RESET_PASSWORD_ENDPOINT, new ResetPasswordRequest(email), headers);
+                        FRONTEND_ROOT_RESOURCE_URL,
+                        RESET_PASSWORD_ENDPOINT,
+                        new ResetPasswordRequest(email),
+                        headers);
 
         assertEquals(400, response.getStatus());
     }

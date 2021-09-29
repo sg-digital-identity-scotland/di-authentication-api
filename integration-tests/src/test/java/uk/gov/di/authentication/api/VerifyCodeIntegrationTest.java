@@ -57,7 +57,9 @@ public class VerifyCodeIntegrationTest extends IntegrationTestEndpoints {
         String code = RedisHelper.generateAndSaveEmailCode(EMAIL_ADDRESS, 900);
         VerifyCodeRequest codeRequest = new VerifyCodeRequest(VERIFY_EMAIL, code);
 
-        Response response = RequestHelper.request(VERIFY_CODE_ENDPOINT, codeRequest, headers);
+        Response response =
+                RequestHelper.request(
+                        FRONTEND_ROOT_RESOURCE_URL, VERIFY_CODE_ENDPOINT, codeRequest, headers);
 
         assertEquals(200, response.getStatus());
     }
@@ -77,7 +79,9 @@ public class VerifyCodeIntegrationTest extends IntegrationTestEndpoints {
         headers.add("Session-Id", sessionId);
         headers.add("X-API-Key", API_KEY);
 
-        Response response = RequestHelper.request(VERIFY_CODE_ENDPOINT, codeRequest, headers);
+        Response response =
+                RequestHelper.request(
+                        FRONTEND_ROOT_RESOURCE_URL, VERIFY_CODE_ENDPOINT, codeRequest, headers);
 
         assertEquals(400, response.getStatus());
         BaseAPIResponse codeResponse =
@@ -97,14 +101,18 @@ public class VerifyCodeIntegrationTest extends IntegrationTestEndpoints {
         headers.add("Session-Id", sessionId);
         headers.add("X-API-Key", API_KEY);
 
-        Response response = RequestHelper.request(VERIFY_CODE_ENDPOINT, codeRequest, headers);
+        Response response =
+                RequestHelper.request(
+                        FRONTEND_ROOT_RESOURCE_URL, VERIFY_CODE_ENDPOINT, codeRequest, headers);
 
         assertEquals(200, response.getStatus());
         BaseAPIResponse codeResponse1 =
                 objectMapper.readValue(response.readEntity(String.class), BaseAPIResponse.class);
         assertEquals(SessionState.EMAIL_CODE_VERIFIED, codeResponse1.getSessionState());
 
-        Response response2 = RequestHelper.request(VERIFY_CODE_ENDPOINT, codeRequest, headers);
+        Response response2 =
+                RequestHelper.request(
+                        FRONTEND_ROOT_RESOURCE_URL, VERIFY_CODE_ENDPOINT, codeRequest, headers);
 
         assertEquals(400, response2.getStatus());
 
@@ -133,7 +141,9 @@ public class VerifyCodeIntegrationTest extends IntegrationTestEndpoints {
         VerifyCodeRequest codeRequest =
                 new VerifyCodeRequest(NotificationType.VERIFY_PHONE_NUMBER, code);
 
-        Response response = RequestHelper.request(VERIFY_CODE_ENDPOINT, codeRequest, headers);
+        Response response =
+                RequestHelper.request(
+                        FRONTEND_ROOT_RESOURCE_URL, VERIFY_CODE_ENDPOINT, codeRequest, headers);
 
         assertEquals(200, response.getStatus());
         BaseAPIResponse codeResponse =
@@ -157,7 +167,9 @@ public class VerifyCodeIntegrationTest extends IntegrationTestEndpoints {
         VerifyCodeRequest codeRequest =
                 new VerifyCodeRequest(NotificationType.VERIFY_PHONE_NUMBER, code);
 
-        Response response = RequestHelper.request(VERIFY_CODE_ENDPOINT, codeRequest, headers);
+        Response response =
+                RequestHelper.request(
+                        FRONTEND_ROOT_RESOURCE_URL, VERIFY_CODE_ENDPOINT, codeRequest, headers);
 
         assertEquals(200, response.getStatus());
         BaseAPIResponse codeResponse =
@@ -182,7 +194,9 @@ public class VerifyCodeIntegrationTest extends IntegrationTestEndpoints {
 
         TimeUnit.SECONDS.sleep(3);
 
-        Response response = RequestHelper.request(VERIFY_CODE_ENDPOINT, codeRequest, headers);
+        Response response =
+                RequestHelper.request(
+                        FRONTEND_ROOT_RESOURCE_URL, VERIFY_CODE_ENDPOINT, codeRequest, headers);
 
         assertEquals(400, response.getStatus());
 
@@ -204,7 +218,9 @@ public class VerifyCodeIntegrationTest extends IntegrationTestEndpoints {
         VerifyCodeRequest codeRequest =
                 new VerifyCodeRequest(NotificationType.VERIFY_PHONE_NUMBER, "123456");
 
-        Response response = RequestHelper.request(VERIFY_CODE_ENDPOINT, codeRequest, headers);
+        Response response =
+                RequestHelper.request(
+                        FRONTEND_ROOT_RESOURCE_URL, VERIFY_CODE_ENDPOINT, codeRequest, headers);
 
         assertEquals(400, response.getStatus());
 
@@ -226,7 +242,9 @@ public class VerifyCodeIntegrationTest extends IntegrationTestEndpoints {
 
         VerifyCodeRequest codeRequest = new VerifyCodeRequest(VERIFY_EMAIL, "123456");
 
-        Response response = RequestHelper.request(VERIFY_CODE_ENDPOINT, codeRequest, headers);
+        Response response =
+                RequestHelper.request(
+                        FRONTEND_ROOT_RESOURCE_URL, VERIFY_CODE_ENDPOINT, codeRequest, headers);
 
         assertEquals(400, response.getStatus());
 
@@ -247,7 +265,9 @@ public class VerifyCodeIntegrationTest extends IntegrationTestEndpoints {
         String code = RedisHelper.generateAndSaveEmailCode(EMAIL_ADDRESS, 900);
         VerifyCodeRequest codeRequest = new VerifyCodeRequest(VERIFY_EMAIL, code);
 
-        Response response = RequestHelper.request(VERIFY_CODE_ENDPOINT, codeRequest, headers);
+        Response response =
+                RequestHelper.request(
+                        FRONTEND_ROOT_RESOURCE_URL, VERIFY_CODE_ENDPOINT, codeRequest, headers);
 
         assertEquals(400, response.getStatus());
         assertEquals(
@@ -269,7 +289,9 @@ public class VerifyCodeIntegrationTest extends IntegrationTestEndpoints {
                 new VerifyCodeRequest(NotificationType.VERIFY_PHONE_NUMBER, code);
         DynamoHelper.signUp(EMAIL_ADDRESS, "password");
 
-        Response response = RequestHelper.request(VERIFY_CODE_ENDPOINT, codeRequest, headers);
+        Response response =
+                RequestHelper.request(
+                        FRONTEND_ROOT_RESOURCE_URL, VERIFY_CODE_ENDPOINT, codeRequest, headers);
 
         assertEquals(400, response.getStatus());
         assertEquals(
@@ -293,7 +315,9 @@ public class VerifyCodeIntegrationTest extends IntegrationTestEndpoints {
         String code = RedisHelper.generateAndSaveMfaCode(EMAIL_ADDRESS, 900);
         VerifyCodeRequest codeRequest = new VerifyCodeRequest(NotificationType.MFA_SMS, code);
 
-        Response response = RequestHelper.request(VERIFY_CODE_ENDPOINT, codeRequest, headers);
+        Response response =
+                RequestHelper.request(
+                        FRONTEND_ROOT_RESOURCE_URL, VERIFY_CODE_ENDPOINT, codeRequest, headers);
 
         assertEquals(200, response.getStatus());
 
@@ -318,7 +342,9 @@ public class VerifyCodeIntegrationTest extends IntegrationTestEndpoints {
         String code = RedisHelper.generateAndSaveMfaCode(EMAIL_ADDRESS, 900);
         VerifyCodeRequest codeRequest = new VerifyCodeRequest(NotificationType.MFA_SMS, code);
 
-        Response response = RequestHelper.request(VERIFY_CODE_ENDPOINT, codeRequest, headers);
+        Response response =
+                RequestHelper.request(
+                        FRONTEND_ROOT_RESOURCE_URL, VERIFY_CODE_ENDPOINT, codeRequest, headers);
 
         assertEquals(200, response.getStatus());
 
@@ -339,7 +365,9 @@ public class VerifyCodeIntegrationTest extends IntegrationTestEndpoints {
         String code = RedisHelper.generateAndSaveEmailCode(EMAIL_ADDRESS, 900);
         VerifyCodeRequest codeRequest = new VerifyCodeRequest(NotificationType.MFA_SMS, code);
 
-        Response response = RequestHelper.request(VERIFY_CODE_ENDPOINT, codeRequest, headers);
+        Response response =
+                RequestHelper.request(
+                        FRONTEND_ROOT_RESOURCE_URL, VERIFY_CODE_ENDPOINT, codeRequest, headers);
 
         assertEquals(400, response.getStatus());
         assertEquals(

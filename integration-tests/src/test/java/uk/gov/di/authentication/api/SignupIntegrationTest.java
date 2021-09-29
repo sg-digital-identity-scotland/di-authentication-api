@@ -35,7 +35,9 @@ public class SignupIntegrationTest extends IntegrationTestEndpoints {
         headers.add("Session-Id", sessionId);
         headers.add("X-API-Key", API_KEY);
 
-        Response response = RequestHelper.request(SIGNUP_ENDPOINT, request, headers);
+        Response response =
+                RequestHelper.request(
+                        FRONTEND_ROOT_RESOURCE_URL, SIGNUP_ENDPOINT, request, headers);
 
         assertEquals(200, response.getStatus());
 

@@ -6,6 +6,10 @@ output "api_gateway_root_id" {
   value = aws_api_gateway_rest_api.di_authentication_api.id
 }
 
+output "frontend_api_gateway_root_id" {
+  value = aws_api_gateway_rest_api.di_authentication_frontend_api.id
+}
+
 output "token_signing_key_alias" {
   value = var.id_token_signing_key_alias_name
 }

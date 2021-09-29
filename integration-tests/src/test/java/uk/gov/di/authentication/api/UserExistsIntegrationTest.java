@@ -39,7 +39,9 @@ public class UserExistsIntegrationTest extends IntegrationTestEndpoints {
         headers.add("X-API-Key", API_KEY);
         UserWithEmailRequest request = new UserWithEmailRequest(emailAddress);
 
-        Response response = RequestHelper.request(USEREXISTS_ENDPOINT, request, headers);
+        Response response =
+                RequestHelper.request(
+                        FRONTEND_ROOT_RESOURCE_URL, USEREXISTS_ENDPOINT, request, headers);
 
         assertEquals(200, response.getStatus());
         String responseString = response.readEntity(String.class);
@@ -60,7 +62,9 @@ public class UserExistsIntegrationTest extends IntegrationTestEndpoints {
         headers.add("X-API-Key", API_KEY);
         RedisHelper.setSessionState(sessionId, SessionState.NEW);
         UserWithEmailRequest request = new UserWithEmailRequest(emailAddress);
-        Response response = RequestHelper.request(USEREXISTS_ENDPOINT, request, headers);
+        Response response =
+                RequestHelper.request(
+                        FRONTEND_ROOT_RESOURCE_URL, USEREXISTS_ENDPOINT, request, headers);
 
         assertEquals(200, response.getStatus());
         String responseString = response.readEntity(String.class);
@@ -80,7 +84,9 @@ public class UserExistsIntegrationTest extends IntegrationTestEndpoints {
         headers.add("X-API-Key", API_KEY);
         RedisHelper.setSessionState(sessionId, SessionState.AUTHENTICATED);
         UserWithEmailRequest request = new UserWithEmailRequest(emailAddress);
-        Response response = RequestHelper.request(USEREXISTS_ENDPOINT, request, headers);
+        Response response =
+                RequestHelper.request(
+                        FRONTEND_ROOT_RESOURCE_URL, USEREXISTS_ENDPOINT, request, headers);
 
         assertEquals(400, response.getStatus());
 

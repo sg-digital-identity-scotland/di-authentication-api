@@ -98,7 +98,11 @@ public class LoginIntegrationTest extends IntegrationTestEndpoints {
         headers.add("X-API-Key", API_KEY);
         headers.add("Client-Session-Id", CLIENT_SESSION_ID);
         Response response =
-                RequestHelper.request(LOGIN_ENDPOINT, new LoginRequest(email, password), headers);
+                RequestHelper.request(
+                        FRONTEND_ROOT_RESOURCE_URL,
+                        LOGIN_ENDPOINT,
+                        new LoginRequest(email, password),
+                        headers);
 
         assertEquals(200, response.getStatus());
 
@@ -134,7 +138,11 @@ public class LoginIntegrationTest extends IntegrationTestEndpoints {
         headers.add("X-API-Key", API_KEY);
 
         Response response =
-                RequestHelper.request(LOGIN_ENDPOINT, new LoginRequest(email, password), headers);
+                RequestHelper.request(
+                        FRONTEND_ROOT_RESOURCE_URL,
+                        LOGIN_ENDPOINT,
+                        new LoginRequest(email, password),
+                        headers);
 
         assertEquals(401, response.getStatus());
     }

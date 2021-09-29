@@ -151,6 +151,7 @@ run-integration-tests() {
   run_integration_tests_start_seconds=$SECONDS
   pushd ci/terraform/oidc >/dev/null
   export API_GATEWAY_ID="$(terraform output -raw api_gateway_root_id)"
+  export FRONTEND_API_GATEWAY_ID="$(terraform output -raw frontend_api_gateway_root_id)"
   export TOKEN_SIGNING_KEY_ALIAS="$(terraform output -raw token_signing_key_alias)"
   export BASE_URL="$(terraform output -raw base_url)"
   export API_KEY="$(terraform output -raw frontend_api_key)"
