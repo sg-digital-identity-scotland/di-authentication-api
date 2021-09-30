@@ -36,24 +36,33 @@ public class AuditService {
         eventBuilder.setTimestamp(timestamp);
         eventBuilder.setEventId(UUID.randomUUID().toString());
 
-        Arrays.stream(metadataPairs).forEach(metadataPair -> {
-            switch (metadataPair.key) {
-                case "clientId": {
-                    eventBuilder.setClientId(metadataPair.value.toString());
-                    break;
-                }
-                case "requestId": {
-                    eventBuilder.setRequestId(metadataPair.value.toString());
-                    break;
-                }
-                default: {
-                    // TODO: Two possible choices here.
-                    // Either we should never have an unrecognised key, in which case we should throw an exception (or just not have a default case).
-                    // Or, we add the data to the builder in some generic way, maybe via setField or setUnknownFields.  I don't understand this though...
-                    break;
-                }
-            }
-        });
+        Arrays.stream(metadataPairs)
+                .forEach(
+                        metadataPair -> {
+                            switch (metadataPair.key) {
+                                case "clientId":
+                                    {
+                                        eventBuilder.setClientId(metadataPair.value.toString());
+                                        break;
+                                    }
+                                case "requestId":
+                                    {
+                                        eventBuilder.setRequestId(metadataPair.value.toString());
+                                        break;
+                                    }
+                                default:
+                                    {
+                                        // TODO: Two possible choices here.
+                                        // Either we should never have an unrecognised key, in which
+                                        // case we should throw an exception (or just not have a
+                                        // default case).
+                                        // Or, we add the data to the builder in some generic way,
+                                        // maybe via setField or setUnknownFields.  I don't
+                                        // understand this though...
+                                        break;
+                                    }
+                            }
+                        });
 
         var signedEventBuilder = SignedAuditEvent.newBuilder();
         signedEventBuilder.setPayload(eventBuilder.build().toByteString());

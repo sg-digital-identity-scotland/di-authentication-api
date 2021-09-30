@@ -67,7 +67,8 @@ class AuditServiceTest {
         var clientId = "Some client ID";
         var requestId = "Some request ID";
 
-        auditService.submitAuditEvent(TEST_EVENT_ONE, pair("clientId", clientId), pair("requestId", requestId));
+        auditService.submitAuditEvent(
+                TEST_EVENT_ONE, pair("clientId", clientId), pair("requestId", requestId));
 
         verify(snsService).publishAuditMessage(messageCaptor.capture());
         var serialisedAuditMessage = messageCaptor.getValue();

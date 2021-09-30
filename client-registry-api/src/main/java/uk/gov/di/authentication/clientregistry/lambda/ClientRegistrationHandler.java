@@ -59,7 +59,9 @@ public class ClientRegistrationHandler
         return isWarming(input)
                 .orElseGet(
                         () -> {
-                            auditService.submitAuditEvent(REGISTER_CLIENT_REQUEST_RECEIVED, pair("requestId", context.getAwsRequestId()));
+                            auditService.submitAuditEvent(
+                                    REGISTER_CLIENT_REQUEST_RECEIVED,
+                                    pair("requestId", context.getAwsRequestId()));
 
                             try {
                                 ClientRegistrationRequest clientRegistrationRequest =
