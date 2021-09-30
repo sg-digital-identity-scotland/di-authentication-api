@@ -28,6 +28,14 @@ public class AuditMessageMatcher<T> extends TypeSafeDiagnosingMatcher<String> {
         return new AuditMessageMatcher<>("timestamp", AuditEvent::getTimestamp, timestampAsString);
     }
 
+    public static AuditMessageMatcher<String> hasClientId(String clientId) {
+        return new AuditMessageMatcher<>("clientId", AuditEvent::getClientId, clientId);
+    }
+
+    public static AuditMessageMatcher<String> hasRequestId(String requestId) {
+        return new AuditMessageMatcher<>("requestId", AuditEvent::getRequestId, requestId);
+    }
+
     @Override
     protected boolean matchesSafely(
             String serialisedAuditMessage, Description mismatchDescription) {

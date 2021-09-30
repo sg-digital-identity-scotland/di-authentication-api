@@ -16,7 +16,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static uk.gov.di.authentication.shared.matchers.AuditMessageMatcher.hasClientId;
 import static uk.gov.di.authentication.shared.matchers.AuditMessageMatcher.hasEventName;
+import static uk.gov.di.authentication.shared.matchers.AuditMessageMatcher.hasRequestId;
 import static uk.gov.di.authentication.shared.matchers.AuditMessageMatcher.hasTimestamp;
 import static uk.gov.di.authentication.shared.services.AuditService.MetadataPair.pair;
 import static uk.gov.di.authentication.shared.services.AuditServiceTest.TestEvents.TEST_EVENT_ONE;
@@ -59,7 +61,25 @@ class AuditServiceTest {
     }
 
     @Test
-    void shouldLogAuditEventWithMetadataPairsAttached() {
+    void shouldLogAuditEventWithRecognisedMetadataPairsAttached() {
+        var auditService = new AuditService(FIXED_CLOCK, snsService);
+
+        var clientId = "Some client ID";
+        var requestId = "Some request ID";
+
+        auditService.submitAuditEvent(TEST_EVENT_ONE, pair("clientId", clientId), pair("requestId", requestId));
+
+        verify(snsService).publishAuditMessage(messageCaptor.capture());
+        var serialisedAuditMessage = messageCaptor.getValue();
+
+        assertThat(serialisedAuditMessage, hasTimestamp(FIXED_TIMESTAMP));
+        assertThat(serialisedAuditMessage, hasEventName(TEST_EVENT_ONE.toString()));
+        assertThat(serialisedAuditMessage, hasClientId(clientId));
+        assertThat(serialisedAuditMessage, hasRequestId(requestId));
+    }
+
+    @Test
+    void shouldLogAuditEventWithUnrecognisedMetadataPairsAttached() {
         var auditService = new AuditService(FIXED_CLOCK, snsService);
 
         auditService.submitAuditEvent(TEST_EVENT_ONE, pair("key", "value"), pair("key2", "value2"));
@@ -69,5 +89,6 @@ class AuditServiceTest {
 
         assertThat(serialisedAuditMessage, hasTimestamp(FIXED_TIMESTAMP));
         assertThat(serialisedAuditMessage, hasEventName(TEST_EVENT_ONE.toString()));
+        // TODO - no idea how to check extra fields...
     }
 }

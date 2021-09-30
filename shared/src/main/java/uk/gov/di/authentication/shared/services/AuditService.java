@@ -5,7 +5,9 @@ import uk.gov.di.audit.AuditPayload.SignedAuditEvent;
 import uk.gov.di.authentication.shared.domain.AuditableEvent;
 
 import java.time.Clock;
+import java.util.Arrays;
 import java.util.Objects;
+import java.util.UUID;
 
 public class AuditService {
 
@@ -32,7 +34,26 @@ public class AuditService {
         var eventBuilder = AuditEvent.newBuilder();
         eventBuilder.setEventName(eventEnum.toString());
         eventBuilder.setTimestamp(timestamp);
-        // TODO - Extract other values from the metadataPairs argument.
+        eventBuilder.setEventId(UUID.randomUUID().toString());
+
+        Arrays.stream(metadataPairs).forEach(metadataPair -> {
+            switch (metadataPair.key) {
+                case "clientId": {
+                    eventBuilder.setClientId(metadataPair.value.toString());
+                    break;
+                }
+                case "requestId": {
+                    eventBuilder.setRequestId(metadataPair.value.toString());
+                    break;
+                }
+                default: {
+                    // TODO: Two possible choices here.
+                    // Either we should never have an unrecognised key, in which case we should throw an exception (or just not have a default case).
+                    // Or, we add the data to the builder in some generic way, maybe via setField or setUnknownFields.  I don't understand this though...
+                    break;
+                }
+            }
+        });
 
         var signedEventBuilder = SignedAuditEvent.newBuilder();
         signedEventBuilder.setPayload(eventBuilder.build().toByteString());

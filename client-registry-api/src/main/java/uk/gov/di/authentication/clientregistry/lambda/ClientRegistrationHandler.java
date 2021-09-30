@@ -23,6 +23,7 @@ import static uk.gov.di.authentication.clientregistry.domain.ClientRegistryAudit
 import static uk.gov.di.authentication.clientregistry.domain.ClientRegistryAuditableEvent.REGISTER_CLIENT_REQUEST_RECEIVED;
 import static uk.gov.di.authentication.shared.helpers.ApiGatewayResponseHelper.generateApiGatewayProxyResponse;
 import static uk.gov.di.authentication.shared.helpers.WarmerHelper.isWarming;
+import static uk.gov.di.authentication.shared.services.AuditService.MetadataPair.pair;
 
 public class ClientRegistrationHandler
         implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
@@ -58,7 +59,7 @@ public class ClientRegistrationHandler
         return isWarming(input)
                 .orElseGet(
                         () -> {
-                            auditService.submitAuditEvent(REGISTER_CLIENT_REQUEST_RECEIVED);
+                            auditService.submitAuditEvent(REGISTER_CLIENT_REQUEST_RECEIVED, pair("requestId", context.getAwsRequestId()));
 
                             try {
                                 ClientRegistrationRequest clientRegistrationRequest =
