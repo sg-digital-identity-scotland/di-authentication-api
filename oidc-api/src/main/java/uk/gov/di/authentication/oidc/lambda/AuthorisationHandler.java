@@ -353,14 +353,15 @@ public class AuthorisationHandler
                 if (authorizationService.isClientCookieConsentShared(
                                 authenticationRequest.getClientID())
                         && !authRequestParameters.get(COOKIE_CONSENT).isEmpty()) {
+                    String cookieConsentSharedParamValue =
+                            authRequestParameters.get(COOKIE_CONSENT).get(0);
                     LOGGER.info(
-                            "Sharing cookie_consent for client {}",
-                            authenticationRequest.getClientID());
+                            "Sharing cookie_consent for client {} cookie_consent={}",
+                            authenticationRequest.getClientID(),
+                            cookieConsentSharedParamValue);
                     redirectUri =
                             new URIBuilder(redirectUri)
-                                    .addParameter(
-                                            COOKIE_CONSENT,
-                                            authRequestParameters.get(COOKIE_CONSENT).get(0))
+                                    .addParameter(COOKIE_CONSENT, cookieConsentSharedParamValue)
                                     .build();
                 }
             } catch (ClientNotFoundException e) {

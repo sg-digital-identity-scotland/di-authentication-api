@@ -192,13 +192,18 @@ public class AuthCodeHandler
                                 AuthenticationSuccessResponse authenticationResponse;
                                 if (authorizationService.isClientCookieConsentShared(
                                         authenticationRequest.getClientID())) {
+                                    String cookieConsentSharedParamValue =
+                                            getCookieConsentSharedParamValue(input.getHeaders());
+                                    LOGGER.info(
+                                            "Sharing cookie_consent for client {} cookie_consent={}",
+                                            authenticationRequest.getClientID(),
+                                            cookieConsentSharedParamValue);
                                     authenticationResponse =
                                             authorizationService.generateSuccessfulAuthResponse(
                                                     authenticationRequest,
                                                     authCode,
                                                     COOKIE_CONSENT_PARAM_NAME,
-                                                    getCookieConsentSharedParamValue(
-                                                            input.getHeaders()));
+                                                    cookieConsentSharedParamValue);
                                 } else {
                                     authenticationResponse =
                                             authorizationService.generateSuccessfulAuthResponse(
