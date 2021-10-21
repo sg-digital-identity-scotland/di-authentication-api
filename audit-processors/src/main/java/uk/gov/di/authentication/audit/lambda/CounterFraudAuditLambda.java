@@ -33,6 +33,6 @@ public class CounterFraudAuditLambda extends BaseAuditHandler {
         // TODO - hash other field from the user object and include them too.
         eventData.put("user.ip-address", user.getIpAddress());
 
-        LOG.info(new ObjectMessage(eventData).toString());
+        LOG.info(new ObjectMessage(eventData));
     }
 }
