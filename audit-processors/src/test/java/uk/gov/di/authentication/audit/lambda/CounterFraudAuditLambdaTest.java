@@ -3,22 +3,22 @@ package uk.gov.di.authentication.audit.lambda;
 import com.amazonaws.services.lambda.runtime.events.SNSEvent;
 import com.google.protobuf.AbstractMessageLite;
 import com.google.protobuf.ByteString;
-import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.LogEvent;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.config.Configuration;
-import org.apache.logging.log4j.core.config.LoggerConfig;
+import org.apache.logging.log4j.core.Logger;
+import org.apache.logging.log4j.core.appender.AbstractAppender;
+import org.apache.logging.log4j.core.config.Property;
+import org.apache.logging.log4j.core.impl.MutableLogEvent;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import uk.gov.di.audit.AuditPayload.AuditEvent;
 import uk.gov.di.audit.AuditPayload.SignedAuditEvent;
 import uk.gov.di.authentication.shared.services.ConfigurationService;
 import uk.gov.di.authentication.shared.services.KmsConnectionService;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,7 +26,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.di.authentication.shared.matchers.LogEventMatcher.hasMDCProperty;
 
@@ -37,13 +36,12 @@ public class CounterFraudAuditLambdaTest {
 
     @Test
     void handlesRequestsAppropriately() {
-        LoggerContext loggerContext = (LoggerContext) LogManager.getContext(false);
+        Logger logger = (Logger) LogManager.getLogger(CounterFraudAuditLambda.class);
 
-        Configuration configuration = loggerContext.getConfiguration();
-        LoggerConfig rootLoggerConfig = configuration.getLoggerConfig("");
-        Appender appender = mock(Appender.class);
+        var appender = new ListAppender();
+        appender.start();
 
-        rootLoggerConfig.addAppender(appender, Level.ALL, null);
+        logger.addAppender(appender);
 
         when(config.getAuditSigningKeyAlias()).thenReturn("key_alias");
         when(kms.validateSignature(any(ByteBuffer.class), any(ByteBuffer.class), anyString()))
@@ -60,10 +58,7 @@ public class CounterFraudAuditLambdaTest {
 
         handler.handleRequest(inputEvent(payload), null);
 
-        ArgumentCaptor<LogEvent> auditEventArgumentCaptor = ArgumentCaptor.forClass(LogEvent.class);
-        verify(appender).append(auditEventArgumentCaptor.capture());
-
-        LogEvent logEvent = auditEventArgumentCaptor.getValue();
+        LogEvent logEvent = appender.getEvents().get(1);
 
         assertThat(logEvent, hasMDCProperty("timestamp", ""));
     }
@@ -77,5 +72,27 @@ public class CounterFraudAuditLambdaTest {
                 .map(List::of)
                 .map(new SNSEvent()::withRecords)
                 .get();
+    }
+
+    public static class ListAppender extends AbstractAppender {
+
+        final List<LogEvent> events = Collections.synchronizedList(new ArrayList<>());
+
+        public ListAppender() {
+            super("StubAppender", null, null, true, Property.EMPTY_ARRAY);
+        }
+
+        @Override
+        public void append(final LogEvent event) {
+            if (event instanceof MutableLogEvent) {
+                events.add(((MutableLogEvent) event).createMemento());
+            } else {
+                events.add(event);
+            }
+        }
+
+        public List<LogEvent> getEvents() {
+            return events;
+        }
     }
 }
