@@ -28,6 +28,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.di.authentication.shared.matchers.LogEventMatcher.hasMDCProperty;
 
 public class CounterFraudAuditLambdaTest {
 
@@ -54,22 +55,17 @@ public class CounterFraudAuditLambdaTest {
                 SignedAuditEvent.newBuilder()
                         .setSignature(ByteString.copyFrom("signature".getBytes()))
                         .setPayload(
-                                AuditEvent.newBuilder()
-                                        .setEventId("foo")
-                                        .build()
-                                        .toByteString())
+                                AuditEvent.newBuilder().setEventId("foo").build().toByteString())
                         .build();
 
         handler.handleRequest(inputEvent(payload), null);
 
-        ArgumentCaptor<LogEvent> auditEventArgumentCaptor =
-                ArgumentCaptor.forClass(LogEvent.class);
+        ArgumentCaptor<LogEvent> auditEventArgumentCaptor = ArgumentCaptor.forClass(LogEvent.class);
         verify(appender).append(auditEventArgumentCaptor.capture());
 
         LogEvent logEvent = auditEventArgumentCaptor.getValue();
 
-        assertThat(logEvent, hasMDCProperty("security-breach", "true"));
-        assertThat(logEvent, hasFormattedMessage(expectedMessage));
+        assertThat(logEvent, hasMDCProperty("timestamp", ""));
     }
 
     private SNSEvent inputEvent(SignedAuditEvent payload) {

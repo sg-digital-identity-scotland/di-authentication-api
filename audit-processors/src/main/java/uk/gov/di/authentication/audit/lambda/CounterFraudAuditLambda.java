@@ -1,9 +1,11 @@
 package uk.gov.di.authentication.audit.lambda;
 
-import org.slf4j.MDC;
+import org.apache.logging.log4j.message.ObjectMessage;
 import uk.gov.di.audit.AuditPayload.AuditEvent;
 import uk.gov.di.authentication.shared.services.ConfigurationService;
 import uk.gov.di.authentication.shared.services.KmsConnectionService;
+
+import java.util.HashMap;
 
 public class CounterFraudAuditLambda extends BaseAuditHandler {
 
@@ -18,19 +20,19 @@ public class CounterFraudAuditLambda extends BaseAuditHandler {
 
     @Override
     void handleAuditEvent(AuditEvent auditEvent) {
-        MDC.put("event-id", auditEvent.getEventId());
-        MDC.put("request-id", auditEvent.getRequestId());
-        MDC.put("session-id", auditEvent.getSessionId());
-        MDC.put("client-id", auditEvent.getClientId());
-        MDC.put("timestamp", auditEvent.getTimestamp());
-        MDC.put("event-name", auditEvent.getEventName());
+        var eventData = new HashMap<String, String>();
+
+        eventData.put("event-id", auditEvent.getEventId());
+        eventData.put("request-id", auditEvent.getRequestId());
+        eventData.put("session-id", auditEvent.getSessionId());
+        eventData.put("client-id", auditEvent.getClientId());
+        eventData.put("timestamp", auditEvent.getTimestamp());
+        eventData.put("event-name", auditEvent.getEventName());
 
         AuditEvent.User user = auditEvent.getUser();
         // TODO - hash other field from the user object and include them too.
-        MDC.put("user.ip-address", user.getIpAddress());
+        eventData.put("user.ip-address", user.getIpAddress());
 
-        LOG.info("Logging audit event");
-
-        MDC.clear();
+        LOG.info(new ObjectMessage(eventData).toString());
     }
 }
