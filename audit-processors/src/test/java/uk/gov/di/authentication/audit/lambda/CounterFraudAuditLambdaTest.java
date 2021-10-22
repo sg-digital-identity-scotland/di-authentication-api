@@ -44,6 +44,7 @@ public class CounterFraudAuditLambdaTest {
         logger.addAppender(appender);
 
         when(config.getAuditSigningKeyAlias()).thenReturn("key_alias");
+        when(config.getCounterFraudAuditSecretKey()).thenReturn(new byte[] {(byte) 0});
         when(kms.validateSignature(any(ByteBuffer.class), any(ByteBuffer.class), anyString()))
                 .thenReturn(true);
 

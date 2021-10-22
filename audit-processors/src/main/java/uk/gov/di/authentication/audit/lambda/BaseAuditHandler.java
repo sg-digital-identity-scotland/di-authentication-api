@@ -20,16 +20,17 @@ public abstract class BaseAuditHandler implements RequestHandler<SNSEvent, Objec
 
     protected final Logger LOG = LogManager.getLogger(getClass());
     private final KmsConnectionService kmsConnectionService;
-    private final ConfigurationService service;
+    protected final ConfigurationService configService;
 
-    BaseAuditHandler(KmsConnectionService kmsConnectionService, ConfigurationService service) {
+    BaseAuditHandler(
+            KmsConnectionService kmsConnectionService, ConfigurationService configService) {
         this.kmsConnectionService = kmsConnectionService;
-        this.service = service;
+        this.configService = configService;
     }
 
     BaseAuditHandler() {
-        this.service = new ConfigurationService();
-        this.kmsConnectionService = new KmsConnectionService(service);
+        this.configService = new ConfigurationService();
+        this.kmsConnectionService = new KmsConnectionService(configService);
     }
 
     @Override
@@ -59,6 +60,6 @@ public abstract class BaseAuditHandler implements RequestHandler<SNSEvent, Objec
         return kmsConnectionService.validateSignature(
                 event.get().getSignature().asReadOnlyByteBuffer(),
                 event.get().getPayload().asReadOnlyByteBuffer(),
-                service.getAuditSigningKeyAlias());
+                configService.getAuditSigningKeyAlias());
     }
 }
