@@ -7,11 +7,12 @@ module "jwks" {
   environment     = var.environment
 
   handler_environment_variables = {
-    BASE_URL                = local.api_base_url
-    EVENTS_SNS_TOPIC_ARN    = aws_sns_topic.events.arn
-    AUDIT_SIGNING_KEY_ALIAS = local.audit_signing_key_alias_name
-    LOCALSTACK_ENDPOINT     = var.use_localstack ? var.localstack_endpoint : null
-    TOKEN_SIGNING_KEY_ALIAS = local.id_token_signing_key_alias_name
+    BASE_URL                       = local.api_base_url
+    COUNTER_FRAUD_AUDIT_SECRET_KEY = var.counter_fraud_audit_hash_secret
+    EVENTS_SNS_TOPIC_ARN           = aws_sns_topic.events.arn
+    AUDIT_SIGNING_KEY_ALIAS        = local.audit_signing_key_alias_name
+    LOCALSTACK_ENDPOINT            = var.use_localstack ? var.localstack_endpoint : null
+    TOKEN_SIGNING_KEY_ALIAS        = local.id_token_signing_key_alias_name
   }
   handler_function_name = "uk.gov.di.authentication.oidc.lambda.JwksHandler::handleRequest"
 

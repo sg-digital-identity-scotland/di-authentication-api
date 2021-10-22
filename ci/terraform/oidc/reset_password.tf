@@ -7,19 +7,20 @@ module "reset_password" {
   environment     = var.environment
 
   handler_environment_variables = {
-    BASE_URL                 = local.frontend_api_base_url
-    DYNAMO_ENDPOINT          = var.use_localstack ? var.lambda_dynamo_endpoint : null
-    LOCALSTACK_ENDPOINT      = var.use_localstack ? var.localstack_endpoint : null
-    EMAIL_QUEUE_URL          = aws_sqs_queue.email_queue.id
-    ENVIRONMENT              = var.environment
-    EVENTS_SNS_TOPIC_ARN     = aws_sns_topic.events.arn
-    AUDIT_SIGNING_KEY_ALIAS  = local.audit_signing_key_alias_name
-    REDIS_HOST               = local.external_redis_host
-    REDIS_PORT               = local.external_redis_port
-    REDIS_PASSWORD           = local.external_redis_password
-    REDIS_TLS                = var.redis_use_tls
-    SQS_ENDPOINT             = var.use_localstack ? "http://localhost:45678/" : null
-    TERMS_CONDITIONS_VERSION = var.terms_and_conditions
+    BASE_URL                       = local.frontend_api_base_url
+    COUNTER_FRAUD_AUDIT_SECRET_KEY = var.counter_fraud_audit_hash_secret
+    DYNAMO_ENDPOINT                = var.use_localstack ? var.lambda_dynamo_endpoint : null
+    LOCALSTACK_ENDPOINT            = var.use_localstack ? var.localstack_endpoint : null
+    EMAIL_QUEUE_URL                = aws_sqs_queue.email_queue.id
+    ENVIRONMENT                    = var.environment
+    EVENTS_SNS_TOPIC_ARN           = aws_sns_topic.events.arn
+    AUDIT_SIGNING_KEY_ALIAS        = local.audit_signing_key_alias_name
+    REDIS_HOST                     = local.external_redis_host
+    REDIS_PORT                     = local.external_redis_port
+    REDIS_PASSWORD                 = local.external_redis_password
+    REDIS_TLS                      = var.redis_use_tls
+    SQS_ENDPOINT                   = var.use_localstack ? "http://localhost:45678/" : null
+    TERMS_CONDITIONS_VERSION       = var.terms_and_conditions
   }
   handler_function_name = "uk.gov.di.authentication.frontendapi.lambda.ResetPasswordHandler::handleRequest"
 

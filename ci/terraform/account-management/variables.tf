@@ -55,6 +55,10 @@ variable "lambda_dynamo_endpoint" {
   description = "The endpoint that the Lambda must use to connect to DynamoDB API. This may or may not be the same as aws_dynamodb_endpoint"
 }
 
+variable "counter_fraud_audit_hash_secret" {
+  type = string
+}
+
 variable "dns_state_bucket" {
   type = string
 }

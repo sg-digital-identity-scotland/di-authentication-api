@@ -5,9 +5,10 @@ module "delete_account" {
   path_part       = "delete-account"
   endpoint_method = "POST"
   handler_environment_variables = {
-    ENVIRONMENT     = var.environment
-    DYNAMO_ENDPOINT = var.use_localstack ? var.lambda_dynamo_endpoint : null
-    EMAIL_QUEUE_URL = aws_sqs_queue.email_queue.id
+    ENVIRONMENT                    = var.environment
+    COUNTER_FRAUD_AUDIT_SECRET_KEY = var.counter_fraud_audit_hash_secret
+    DYNAMO_ENDPOINT                = var.use_localstack ? var.lambda_dynamo_endpoint : null
+    EMAIL_QUEUE_URL                = aws_sqs_queue.email_queue.id
   }
   handler_function_name = "uk.gov.di.accountmanagement.lambda.RemoveAccountHandler::handleRequest"
 

@@ -7,6 +7,7 @@ image_resource:
     username: ((docker-hub-username))
     password: ((docker-hub-password))
 params:
+  COUNTER_FRAUD_AUDIT_HASH_SECRET: ((build-counter-fraud-audit-hash-secret))
   DEPLOYER_ROLE_ARN: ((deployer-role-arn-non-prod))
   DEPLOY_ENVIRONMENT: build
   NOTIFY_API_KEY: ((build-notify-api-key))
@@ -31,6 +32,7 @@ run:
         -backend-config "region=eu-west-2"
 
       terraform apply -auto-approve \
+        -var 'counter_fraud_audit_hash_secret=${COUNTER_FRAUD_AUDIT_HASH_SECRET}' \
         -var "deployer_role_arn=${DEPLOYER_ROLE_ARN}" \
         -var "environment=${DEPLOY_ENVIRONMENT}" \
         -var 'logging_endpoint_enabled=true' \

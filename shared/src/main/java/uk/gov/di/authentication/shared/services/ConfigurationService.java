@@ -48,6 +48,10 @@ public class ConfigurationService {
         return Integer.parseInt(System.getenv().getOrDefault("CODE_MAX_RETRIES", "5"));
     }
 
+    public byte[] getCounterFraudAuditSecretKey() {
+        return System.getenv("COUNTER_FRAUD_AUDIT_SECRET_KEY").getBytes(StandardCharsets.UTF_8);
+    }
+
     public int getMaxPasswordRetries() {
         return Integer.parseInt(System.getenv().getOrDefault("PASSWORD_MAX_RETRIES", "5"));
     }
