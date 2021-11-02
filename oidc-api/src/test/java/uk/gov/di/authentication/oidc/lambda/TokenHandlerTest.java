@@ -32,6 +32,7 @@ import com.nimbusds.openid.connect.sdk.OIDCTokenResponse;
 import com.nimbusds.openid.connect.sdk.token.OIDCTokens;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import uk.gov.di.authentication.oidc.domain.OidcAuditableEvent;
 import uk.gov.di.authentication.shared.entity.AuthCodeExchangeData;
 import uk.gov.di.authentication.shared.entity.ClientConsent;
 import uk.gov.di.authentication.shared.entity.ClientRegistry;
@@ -43,12 +44,14 @@ import uk.gov.di.authentication.shared.entity.ValidScopes;
 import uk.gov.di.authentication.shared.entity.VectorOfTrust;
 import uk.gov.di.authentication.shared.helpers.ClientSubjectHelper;
 import uk.gov.di.authentication.shared.helpers.TokenGeneratorHelper;
+import uk.gov.di.authentication.shared.services.AuditService;
 import uk.gov.di.authentication.shared.services.AuthorisationCodeService;
 import uk.gov.di.authentication.shared.services.ClientService;
 import uk.gov.di.authentication.shared.services.ClientSessionService;
 import uk.gov.di.authentication.shared.services.ConfigurationService;
 import uk.gov.di.authentication.shared.services.DynamoService;
 import uk.gov.di.authentication.shared.services.RedisConnectionService;
+import uk.gov.di.authentication.shared.services.SessionService;
 import uk.gov.di.authentication.shared.services.TokenService;
 import uk.gov.di.authentication.shared.services.TokenValidationService;
 
@@ -78,6 +81,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.di.authentication.shared.helpers.TokenGeneratorHelper.generateIDToken;
 import static uk.gov.di.authentication.shared.matchers.APIGatewayProxyResponseEventMatcher.hasBody;
@@ -108,15 +112,18 @@ public class TokenHandlerTest {
             mock(TokenValidationService.class);
     private final AuthorisationCodeService authorisationCodeService =
             mock(AuthorisationCodeService.class);
+    private final SessionService sessionService = mock(SessionService.class);
     private final ClientSessionService clientSessionService = mock(ClientSessionService.class);
     private final RedisConnectionService redisConnectionService =
             mock(RedisConnectionService.class);
+    private final AuditService auditService = mock(AuditService.class);
     private TokenHandler handler;
 
     @BeforeEach
     public void setUp() {
         when(configurationService.getBaseURL()).thenReturn(Optional.of(BASE_URI));
         when(configurationService.getSessionExpiry()).thenReturn(1234L);
+        when(context.getAwsRequestId()).thenReturn("aws-session-id");
         handler =
                 new TokenHandler(
                         clientService,
@@ -124,9 +131,11 @@ public class TokenHandlerTest {
                         dynamoService,
                         configurationService,
                         authorisationCodeService,
+                        sessionService,
                         clientSessionService,
                         tokenValidationService,
-                        redisConnectionService);
+                        redisConnectionService,
+                        auditService);
     }
 
     @Test
@@ -184,6 +193,17 @@ public class TokenHandlerTest {
         assertThat(result, hasStatus(200));
         assertTrue(result.getBody().contains(refreshToken.getValue()));
         assertTrue(result.getBody().contains(accessToken.getValue()));
+
+        verify(auditService)
+                .submitAuditEvent(
+                        OidcAuditableEvent.TOKEN_ISSUE_SUCCESS,
+                        "aws-session-id",
+                        "",
+                        CLIENT_ID,
+                        INTERNAL_SUBJECT.getValue(),
+                        TEST_EMAIL,
+                        "123.123.123.123",
+                        PHONE_NUMBER);
     }
 
     @Test
@@ -230,6 +250,17 @@ public class TokenHandlerTest {
         assertTrue(result.getBody().contains(refreshToken.getValue()));
         assertTrue(result.getBody().contains(accessToken.getValue()));
         verify(redisConnectionService, times(1)).deleteValue(redisKey);
+
+        verify(auditService)
+                .submitAuditEvent(
+                        OidcAuditableEvent.TOKEN_ISSUE_SUCCESS,
+                        "aws-session-id",
+                        "",
+                        CLIENT_ID,
+                        AuditService.UNKNOWN,
+                        AuditService.UNKNOWN,
+                        "123.123.123.123",
+                        AuditService.UNKNOWN);
     }
 
     @Test
@@ -285,6 +316,17 @@ public class TokenHandlerTest {
                                         List.of(refreshToken2.getValue()),
                                         INTERNAL_SUBJECT.getValue()));
         verify(redisConnectionService, times(1)).saveWithExpiry(redisKey, updatedTokenstore, 1234L);
+
+        verify(auditService)
+                .submitAuditEvent(
+                        OidcAuditableEvent.TOKEN_ISSUE_SUCCESS,
+                        "aws-session-id",
+                        "",
+                        CLIENT_ID,
+                        AuditService.UNKNOWN,
+                        AuditService.UNKNOWN,
+                        "123.123.123.123",
+                        AuditService.UNKNOWN);
     }
 
     @Test
@@ -298,6 +340,8 @@ public class TokenHandlerTest {
 
         assertEquals(400, result.getStatusCode());
         assertThat(result, hasBody(OAuth2Error.INVALID_CLIENT.toJSONObject().toJSONString()));
+
+        verifyNoInteractions(auditService);
     }
 
     @Test
@@ -313,6 +357,8 @@ public class TokenHandlerTest {
 
         assertEquals(400, result.getStatusCode());
         assertThat(result, hasBody(error.toJSONObject().toJSONString()));
+
+        verifyNoInteractions(auditService);
     }
 
     @Test
@@ -334,6 +380,8 @@ public class TokenHandlerTest {
 
         assertThat(result, hasStatus(400));
         assertThat(result, hasBody(OAuth2Error.INVALID_CLIENT.toJSONObject().toJSONString()));
+
+        verifyNoInteractions(auditService);
     }
 
     @Test
@@ -357,6 +405,8 @@ public class TokenHandlerTest {
         APIGatewayProxyResponseEvent result = generateApiGatewayRequest(privateKeyJWT, authCode);
         assertThat(result, hasStatus(400));
         assertThat(result, hasBody(OAuth2Error.INVALID_GRANT.toJSONObject().toJSONString()));
+
+        verifyNoInteractions(auditService);
     }
 
     @Test
@@ -392,6 +442,8 @@ public class TokenHandlerTest {
                 generateApiGatewayRequest(privateKeyJWT, authCode, "http://invalid-redirect-uri");
         assertThat(result, hasStatus(400));
         assertThat(result, hasBody(OAuth2Error.INVALID_GRANT.toJSONObject().toJSONString()));
+
+        verifyNoInteractions(auditService);
     }
 
     @Test

@@ -17,12 +17,15 @@ import com.nimbusds.openid.connect.sdk.AuthenticationRequest;
 import com.nimbusds.openid.connect.sdk.OIDCTokenResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.gov.di.authentication.oidc.domain.OidcAuditableEvent;
 import uk.gov.di.authentication.shared.entity.AuthCodeExchangeData;
 import uk.gov.di.authentication.shared.entity.ClientRegistry;
 import uk.gov.di.authentication.shared.entity.ClientSession;
 import uk.gov.di.authentication.shared.entity.RefreshTokenStore;
 import uk.gov.di.authentication.shared.entity.UserProfile;
 import uk.gov.di.authentication.shared.helpers.ClientSubjectHelper;
+import uk.gov.di.authentication.shared.helpers.IpAddressHelper;
+import uk.gov.di.authentication.shared.services.AuditService;
 import uk.gov.di.authentication.shared.services.AuthorisationCodeService;
 import uk.gov.di.authentication.shared.services.ClientService;
 import uk.gov.di.authentication.shared.services.ClientSessionService;
@@ -31,6 +34,7 @@ import uk.gov.di.authentication.shared.services.DynamoClientService;
 import uk.gov.di.authentication.shared.services.DynamoService;
 import uk.gov.di.authentication.shared.services.KmsConnectionService;
 import uk.gov.di.authentication.shared.services.RedisConnectionService;
+import uk.gov.di.authentication.shared.services.SessionService;
 import uk.gov.di.authentication.shared.services.TokenService;
 import uk.gov.di.authentication.shared.services.TokenValidationService;
 
@@ -58,9 +62,11 @@ public class TokenHandler
     private final DynamoService dynamoService;
     private final ConfigurationService configurationService;
     private final AuthorisationCodeService authorisationCodeService;
+    private final SessionService sessionService;
     private final ClientSessionService clientSessionService;
     private final TokenValidationService tokenValidationService;
     private final RedisConnectionService redisConnectionService;
+    private final AuditService auditService;
     private static final String TOKEN_PATH = "token";
     private static final String REFRESH_TOKEN_PREFIX = "REFRESH_TOKEN:";
 
@@ -70,17 +76,21 @@ public class TokenHandler
             DynamoService dynamoService,
             ConfigurationService configurationService,
             AuthorisationCodeService authorisationCodeService,
+            SessionService sessionService,
             ClientSessionService clientSessionService,
             TokenValidationService tokenValidationService,
-            RedisConnectionService redisConnectionService) {
+            RedisConnectionService redisConnectionService,
+            AuditService auditService) {
         this.clientService = clientService;
         this.tokenService = tokenService;
         this.dynamoService = dynamoService;
         this.configurationService = configurationService;
         this.authorisationCodeService = authorisationCodeService;
+        this.sessionService = sessionService;
         this.clientSessionService = clientSessionService;
         this.tokenValidationService = tokenValidationService;
         this.redisConnectionService = redisConnectionService;
+        this.auditService = auditService;
     }
 
     public TokenHandler() {
@@ -97,11 +107,13 @@ public class TokenHandler
                         new KmsConnectionService(configurationService));
         this.dynamoService = new DynamoService(configurationService);
         this.authorisationCodeService = new AuthorisationCodeService(configurationService);
+        this.sessionService = new SessionService(configurationService);
         this.clientSessionService = new ClientSessionService(configurationService);
         this.tokenValidationService =
                 new TokenValidationService(
                         configurationService, new KmsConnectionService(configurationService));
         this.redisConnectionService = new RedisConnectionService(configurationService);
+        this.auditService = new AuditService();
     }
 
     @Override
@@ -176,6 +188,8 @@ public class TokenHandler
                                 LOG.info("Processing refresh token request");
                                 return processRefreshTokenRequest(
                                         requestBody,
+                                        context.getAwsRequestId(),
+                                        IpAddressHelper.extractIpAddress(input),
                                         client.getScopes(),
                                         new RefreshToken(requestBody.get("refresh_token")));
                             }
@@ -252,6 +266,17 @@ public class TokenHandler
                                                     .getOIDCTokens()
                                                     .getIDToken()
                                                     .serialize()));
+
+                            auditService.submitAuditEvent(
+                                    OidcAuditableEvent.TOKEN_ISSUE_SUCCESS,
+                                    context.getAwsRequestId(),
+                                    "",
+                                    "",
+                                    userProfile.getSubjectID(),
+                                    userProfile.getEmail(),
+                                    IpAddressHelper.extractIpAddress(input),
+                                    userProfile.getPhoneNumber());
+
                             LOG.info("Successfully generated tokens");
                             return generateApiGatewayProxyResponse(
                                     200, tokenResponse.toJSONObject().toJSONString());
@@ -290,6 +315,8 @@ public class TokenHandler
 
     private APIGatewayProxyResponseEvent processRefreshTokenRequest(
             Map<String, String> requestBody,
+            String requestId,
+            String ipAddress,
             List<String> clientScopes,
             RefreshToken currentRefreshToken) {
         boolean refreshTokenSignatureValid =
@@ -367,6 +394,17 @@ public class TokenHandler
                         scopes,
                         publicSubject);
         LOG.info("Generating successful RefreshToken response");
+
+        auditService.submitAuditEvent(
+                OidcAuditableEvent.TOKEN_ISSUE_SUCCESS,
+                requestId,
+                "",
+                "",
+                AuditService.UNKNOWN,
+                AuditService.UNKNOWN,
+                ipAddress,
+                AuditService.UNKNOWN);
+
         return generateApiGatewayProxyResponse(200, tokenResponse.toJSONObject().toJSONString());
     }
 }
