@@ -25,37 +25,33 @@ public class FakeDataGenerator {
     private static final String PASSWORD_LOCATION = "test_account_passwords.csv";
     private static final String PEPPER = generateRandomSpecialCharacters(32);
 
-    public static void main(String[] args) {
-        try {
-            List<ImportRecord> importRecordList = new ArrayList<>();
-            List<TestPassword> testPasswordList = new ArrayList<>();
+    public static void main(String[] args)
+            throws CsvRequiredFieldEmptyException, CsvDataTypeMismatchException, IOException {
+        List<ImportRecord> importRecordList = new ArrayList<>();
+        List<TestPassword> testPasswordList = new ArrayList<>();
 
-            SecureRandom rng = new SecureRandom();
-            for (int i = 0; i < RECORD_COUNT; i++) {
-                String password = generateRandomSpecialCharacters(10);
-                char[] passwordWithPepper = (password + PEPPER).toCharArray();
-                String hashed = OpenBSDBCrypt.generate(passwordWithPepper, rng.generateSeed(16), 5);
-                String email = format("hello+%d@gov.uk", i);
-                ImportRecord record =
-                        new ImportRecord()
-                                .setEmail(email)
-                                .setPhone(format("+441234%06d", i))
-                                .setEncryptedPassword(hashed)
-                                .setSubjectIdentifier(new Subject().toString())
-                                .setCreatedAt(LocalDateTime.now());
+        SecureRandom rng = new SecureRandom();
+        for (int i = 0; i < RECORD_COUNT; i++) {
+            String password = generateRandomSpecialCharacters(10);
+            char[] passwordWithPepper = (password + PEPPER).toCharArray();
+            String hashed = OpenBSDBCrypt.generate(passwordWithPepper, rng.generateSeed(16), 5);
+            String email = format("hello+%d@gov.uk", i);
+            ImportRecord record =
+                    new ImportRecord()
+                            .setEmail(email)
+                            .setPhone(format("+441234%06d", i))
+                            .setEncryptedPassword(hashed)
+                            .setSubjectIdentifier(new Subject().toString())
+                            .setCreatedAt(LocalDateTime.now());
 
-                importRecordList.add(record);
+            importRecordList.add(record);
 
-                TestPassword testPassword =
-                        new TestPassword().setEmail(email).setPassword(password);
-                testPasswordList.add(testPassword);
-            }
-
-            saveImportFile(importRecordList);
-            savePasswordFile(testPasswordList);
-        } catch (Exception e) {
-            e.printStackTrace();
+            TestPassword testPassword = new TestPassword().setEmail(email).setPassword(password);
+            testPasswordList.add(testPassword);
         }
+
+        saveImportFile(importRecordList);
+        savePasswordFile(testPasswordList);
     }
 
     private static void saveImportFile(List<ImportRecord> importRecordList)
