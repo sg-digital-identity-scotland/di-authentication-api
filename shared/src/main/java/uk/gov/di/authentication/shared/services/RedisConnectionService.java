@@ -16,6 +16,7 @@ import java.util.Optional;
 public class RedisConnectionService implements AutoCloseable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RedisConnectionService.class);
+    public static final String REDIS_CONNECTION_ERROR = "Error getting Redis connection";
     private final RedisClient client;
 
     private final GenericObjectPool<StatefulRedisConnection<String, String>> pool;
@@ -44,8 +45,8 @@ public class RedisConnectionService implements AutoCloseable {
         try (StatefulRedisConnection<String, String> connection = pool.borrowObject()) {
             connection.sync().setex(key, expiry, value);
         } catch (Exception e) {
-            LOGGER.error("Error getting Redis connection");
-            throw new RuntimeException("Error getting Redis connection", e);
+            LOGGER.error(REDIS_CONNECTION_ERROR, e);
+            throw new RedisConnectionException(REDIS_CONNECTION_ERROR, e);
         }
     }
 
@@ -53,8 +54,8 @@ public class RedisConnectionService implements AutoCloseable {
         try (StatefulRedisConnection<String, String> connection = pool.borrowObject()) {
             return (connection.sync().exists(key) == 1);
         } catch (Exception e) {
-            LOGGER.error("Error getting Redis connection");
-            throw new RuntimeException("Error getting Redis connection", e);
+            LOGGER.error(REDIS_CONNECTION_ERROR, e);
+            throw new RedisConnectionException(REDIS_CONNECTION_ERROR, e);
         }
     }
 
@@ -62,8 +63,8 @@ public class RedisConnectionService implements AutoCloseable {
         try (StatefulRedisConnection<String, String> connection = pool.borrowObject()) {
             return connection.sync().get(key);
         } catch (Exception e) {
-            LOGGER.error("Error getting Redis connection");
-            throw new RuntimeException("Error getting Redis connection", e);
+            LOGGER.error(REDIS_CONNECTION_ERROR, e);
+            throw new RedisConnectionException(REDIS_CONNECTION_ERROR, e);
         }
     }
 
@@ -71,8 +72,8 @@ public class RedisConnectionService implements AutoCloseable {
         try (StatefulRedisConnection<String, String> connection = pool.borrowObject()) {
             return connection.sync().del(key);
         } catch (Exception e) {
-            LOGGER.error("Error getting Redis connection");
-            throw new RuntimeException("Error getting Redis connection", e);
+            LOGGER.error(REDIS_CONNECTION_ERROR, e);
+            throw new RedisConnectionException(REDIS_CONNECTION_ERROR, e);
         }
     }
 
@@ -85,8 +86,8 @@ public class RedisConnectionService implements AutoCloseable {
             TransactionResult result = commands.exec();
             return result.get(0);
         } catch (Exception e) {
-            LOGGER.error("Error getting Redis connection");
-            throw new RuntimeException("Error getting Redis connection", e);
+            LOGGER.error(REDIS_CONNECTION_ERROR, e);
+            throw new RedisConnectionException(REDIS_CONNECTION_ERROR, e);
         }
     }
 
@@ -94,8 +95,8 @@ public class RedisConnectionService implements AutoCloseable {
         try (StatefulRedisConnection<String, String> connection = pool.borrowObject()) {
             connection.sync().clientGetname();
         } catch (Exception e) {
-            LOGGER.error("Error getting Redis connection");
-            throw new RuntimeException("Error getting Redis connection", e);
+            LOGGER.error(REDIS_CONNECTION_ERROR, e);
+            throw new RedisConnectionException(REDIS_CONNECTION_ERROR, e);
         }
     }
 
@@ -103,5 +104,11 @@ public class RedisConnectionService implements AutoCloseable {
     public void close() {
         pool.close();
         client.shutdown();
+    }
+
+    public static class RedisConnectionException extends RuntimeException {
+        public RedisConnectionException(String message, Throwable cause) {
+            super(message, cause);
+        }
     }
 }
