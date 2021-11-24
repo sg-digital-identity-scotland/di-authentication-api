@@ -13,15 +13,15 @@ apply plugin: "idea"
 
 ext {
     dependencyVersions = [
-        jackson_version: "2.13.0",
         aws_sdk_version: "1.12.101",
         aws_lambda_core_version: "1.2.1",
         aws_lambda_events_version: "3.10.0",
-        nimbusds_oauth_version: "9.19",
-        nimbusds_jwt_version: "9.15.1",
+        glassfish_version: "3.0.3",
         junit: "5.8.1",
         jackson_version: "2.13.0",
-        glassfish_version: "3.0.3",
+        protobuf_version: "3.19.1",
+        nimbusds_oauth_version: "9.19",
+        nimbusds_jwt_version: "9.15.1",
     ]
 
     terraformEnvironment = project.properties["terraformEnvironment"] ?: "localstack"
@@ -44,6 +44,7 @@ subprojects {
         lambda_tests
         lettuce
         logging_runtime
+        protobuf
         nimbus
         s3
         sns
@@ -86,6 +87,9 @@ subprojects {
 
         nimbus "com.nimbusds:oauth2-oidc-sdk:${dependencyVersions.nimbusds_oauth_version}",
                 "com.nimbusds:nimbus-jose-jwt:${dependencyVersions.nimbusds_jwt_version}"
+
+        protobuf "com.google.protobuf:protobuf-java:${dependencyVersions.protobuf_version}",
+                "com.google.protobuf:protobuf-java-util:${dependencyVersions.protobuf_version}"
 
         sns "com.amazonaws:aws-java-sdk-sns:${dependencyVersions.aws_sdk_version}"
 
