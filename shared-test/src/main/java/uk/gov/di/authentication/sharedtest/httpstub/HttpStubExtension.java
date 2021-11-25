@@ -1,10 +1,15 @@
 package uk.gov.di.authentication.sharedtest.httpstub;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.ws.rs.core.UriBuilder;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
+import uk.gov.di.authentication.shared.helpers.ObjectMapperFactory;
 
 import java.net.URI;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class HttpStubExtension implements AfterAllCallback {
 
@@ -83,6 +88,21 @@ public class HttpStubExtension implements AfterAllCallback {
 
     public URI uri(String path) {
         return baseUri().path(path).build();
+    }
+
+    public List<RecordedRequest> getRecordedRequests() {
+        return httpStub.getRecordedRequests();
+    }
+
+    public <T> List<T> getRecordedRequests(Class<T> clazz) {
+        return httpStub.getRecordedRequests().stream().map(recordedRequest -> recordedRequest.getEntity())
+                .map(e -> {
+                    try {
+                        return ObjectMapperFactory.getInstance().readValue(e, clazz);
+                    } catch (JsonProcessingException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }).collect(Collectors.toList());
     }
 
     private UriBuilder baseUri() {

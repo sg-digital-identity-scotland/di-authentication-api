@@ -4,12 +4,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.gov.di.accountmanagement.entity.AuthenticateRequest;
 import uk.gov.di.accountmanagement.lambda.AuthenticateHandler;
+import uk.gov.di.audit.AuditPayload;
 import uk.gov.di.authentication.sharedtest.basetest.ApiGatewayHandlerIntegrationTest;
 
 import java.util.Map;
 import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static uk.gov.di.accountmanagement.domain.AccountManagementAuditableEvent.ACCOUNT_MANAGEMENT_AUTHENTICATE;
 import static uk.gov.di.authentication.sharedtest.matchers.APIGatewayProxyResponseEventMatcher.hasStatus;
 
 public class AuthenticateIntegrationTest extends ApiGatewayHandlerIntegrationTest {
@@ -30,6 +33,10 @@ public class AuthenticateIntegrationTest extends ApiGatewayHandlerIntegrationTes
                         Optional.of(new AuthenticateRequest(email, password)), Map.of(), Map.of());
 
         assertThat(response, hasStatus(204));
+
+        assertThat(auditTopic.getCountOfRequests(), equalTo(1));
+        // Need custom matcher to make this work
+        assertThat(auditTopic.getRecordedRequests(AuditPayload.class), hasEntry(withAuditableEvent(ACCOUNT_MANAGEMENT_AUTHENTICATE)));
     }
 
     @Test

@@ -150,6 +150,10 @@ class HttpStub {
         return recordedRequests.size();
     }
 
+    public List<RecordedRequest> getRecordedRequests() {
+        return recordedRequests;
+    }
+
     public static <T> T unchecked(Callable<T> callable) {
         try {
             return callable.call();
