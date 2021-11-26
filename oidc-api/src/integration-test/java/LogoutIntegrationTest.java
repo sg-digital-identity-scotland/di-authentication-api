@@ -1,5 +1,3 @@
-package uk.gov.di.authentication.api;
-
 import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.oauth2.sdk.ParseException;
 import com.nimbusds.oauth2.sdk.ResponseType;

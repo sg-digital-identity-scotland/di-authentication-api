@@ -1,5 +1,6 @@
 plugins {
     id "java"
+    id "jacoco"
 }
 
 group "uk.gov.di"
@@ -49,4 +50,11 @@ test {
         showStandardStreams = false
     }
     dependsOn ":composeUp"
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled true
+    }
+    dependsOn "test"
 }

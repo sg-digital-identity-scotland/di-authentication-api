@@ -1,5 +1,3 @@
-package uk.gov.di.authentication.api;
-
 import com.nimbusds.oauth2.sdk.ResponseType;
 import com.nimbusds.oauth2.sdk.Scope;
 import com.nimbusds.oauth2.sdk.id.ClientID;

@@ -1,5 +1,3 @@
-package uk.gov.di.authentication.api;
-
 import com.nimbusds.jose.jwk.JWKSet;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
