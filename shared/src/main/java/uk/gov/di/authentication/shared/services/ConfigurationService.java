@@ -157,7 +157,7 @@ public class ConfigurationService implements BaseLambdaConfiguration, AuditPubli
 
     public String getSessionCookieAttributes() {
         return Optional.ofNullable(System.getenv("SESSION_COOKIE_ATTRIBUTES"))
-                .orElse("Secure; HttpOnly;");
+                .orElse("Secure; HttpOnly; Path=/");
     }
 
     public int getSessionCookieMaxAge() {

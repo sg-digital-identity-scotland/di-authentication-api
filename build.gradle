@@ -122,6 +122,7 @@ spotless {
 dockerCompose {
     buildBeforeUp = true
     forceRecreate = false
+    waitForTcpPorts = false
 
     startedServices = [
         'aws',
@@ -195,8 +196,34 @@ abstract class Terraform extends DefaultTask {
             }
             this.terraformOutputs = new groovy.json.JsonSlurper().parse(os.toByteArray())
         }
+        logger.lifecycle(this.terraformOutputs.toString())
+        var map = new HashMap<String,Object>(this.terraformOutputs)
+        List<String> props = List.of("base_url","frontend_api_base_url","frontend_api_key")
+        FileWriter outputFileWriter
+        try{
+            outputFileWriter = new FileWriter(terraformDirectory.asFile.get().path+"/outputs.json")
+            outputFileWriter.write("{")
+            for (Object p : props){
+                if (map.containsKey(p)){
+                    var obj = map.get(p).toString()
+                    var val = obj.substring(obj.lastIndexOf("value=")+6,obj.length()-1)
+                    outputFileWriter.append("\"${p}\":\"${val}\"")
+                    if (!p.equals(props.get(props.size()-1))) {
+                        outputFileWriter.append(",")
+                    }
+                }
+            }
+            outputFileWriter.append("}")
+        }
+        finally {
+            outputFileWriter.close()
+        }
+
+        logger.lifecycle(getEnvironmentName().get())
+
         logger.lifecycle("Terraform Complete!")
     }
+
 
     protected Object outputs() {
         return this.terraformOutputs
