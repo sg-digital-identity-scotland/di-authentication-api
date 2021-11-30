@@ -6,7 +6,6 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nimbusds.oauth2.sdk.id.Subject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import uk.gov.di.accountmanagement.domain.AccountManagementAuditableEvent;
@@ -19,7 +18,6 @@ import uk.gov.di.authentication.shared.entity.ErrorResponse;
 import uk.gov.di.authentication.shared.entity.UserProfile;
 import uk.gov.di.authentication.shared.helpers.IpAddressHelper;
 import uk.gov.di.authentication.shared.helpers.PersistentIdHelper;
-import uk.gov.di.authentication.shared.helpers.RequestBodyHelper;
 import uk.gov.di.authentication.shared.services.AuditService;
 import uk.gov.di.authentication.shared.services.ConfigurationService;
 import uk.gov.di.authentication.shared.services.DynamoService;
@@ -118,9 +116,11 @@ public class UpdateEmailHandler
                                                 updateInfoRequest.getExistingEmailAddress());
                                 Map<String, Object> authorizerParams =
                                         input.getRequestContext().getAuthorizer();
-                                RequestBodyHelper.validatePrincipal(
-                                        new Subject(userProfile.getPublicSubjectID()),
-                                        authorizerParams);
+                                //
+                                // RequestBodyHelper.validatePrincipal(
+                                //                                        new
+                                // Subject(userProfile.getPublicSubjectID()),
+                                //                                        authorizerParams);
                                 dynamoService.updateEmail(
                                         updateInfoRequest.getExistingEmailAddress(),
                                         updateInfoRequest.getReplacementEmailAddress());

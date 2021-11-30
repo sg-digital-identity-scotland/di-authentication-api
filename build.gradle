@@ -194,6 +194,8 @@ abstract class Terraform extends DefaultTask {
                 args "output", "-json"
             }
             this.terraformOutputs = new groovy.json.JsonSlurper().parse(os.toByteArray())
+            logger.lifecycle(this.terraformOutputs.toString())
+            logger.lifecycle(getEnvironmentName().get())
         }
         logger.lifecycle("Terraform Complete!")
     }
